@@ -1,7 +1,7 @@
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/memejames/elerium-v2-ui-library//main/Library", true))()
 
 local window = library:AddWindow("Sad Private", {
-    main_color = Color3.fromRGB(8, 7, 128),
+    main_color = Color3.fromRGB(0, 0, 0),
     min_size = Vector2.new(740, 500),
     can_resize = false,
 })
@@ -9,12 +9,8 @@ local window = library:AddWindow("Sad Private", {
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local statsFolder = window:AddTab("Stats")
-local targetPlayer = nil
-local dropdown
-
-local player = game.Players.LocalPlayer
-local statsFrame = script.Parent
+local statsTab = window:AddTab("Stats")
+local selectedPlayer = nil
 
 local function formatWithCommas(n)
 	local formatted = tostring(math.floor(n))
@@ -51,36 +47,56 @@ local statNames = {
 	"Muscle King Time",
 }
 
-local function displayStats()
-	if not player:FindFirstChild("leaderstats") then return end
+local statLabels = {}
+
+for i, statName in ipairs(statNames) do
+	local label = statsTab:AddLabel(statName .. ": N/A | N/A")
+	statLabels[statName] = label
+end
+
+local function updateStats(player)
+	if not player or not player:FindFirstChild("leaderstats") then return end
 	local ls = player.leaderstats
 
-	for i, statName in ipairs(statNames) do
+	for _, statName in ipairs(statNames) do
 		local stat = ls:FindFirstChild(statName)
 		if stat then
-			local full = formatWithCommas(stat.Value)
+			local exact = formatWithCommas(stat.Value)
 			local short = formatAbbreviated(stat.Value)
-			local displayText = statName .. ": " .. full .. " (" .. short .. ")"
-
-			local label = statsFrame:FindFirstChild(statName)
-			if not label then
-				label = Instance.new("TextLabel")
-				label.Name = statName
-				label.Size = UDim2.new(1, 0, 0, 25)
-				label.Position = UDim2.new(0, 0, 0, (i - 1) * 26)
-				label.BackgroundTransparency = 1
-				label.TextColor3 = Color3.new(1, 1, 1)
-				label.TextScaled = true
-				label.Font = Enum.Font.SourceSans
-				label.Parent = statsFrame
-			end
-
-			label.Text = displayText
+			statLabels[statName].Text = statName .. ": " .. exact .. " | " .. short
+		else
+			statLabels[statName].Text = statName .. ": N/A | N/A"
 		end
+	end
+end)
+
+local dropdown = statsTab:AddDropdown("Selecionar Jogador", {}, function(value)
+	selectedPlayer = Players:FindFirstChild(value)
+	updateStats(selectedPlayer)
+end)
+
+local function updateDropdown()
+	local playerNames = {}
+	for _, p in pairs(Players:GetPlayers()) do
+		if p ~= LocalPlayer then
+			table.insert(playerNames, p.Name)
+		end
+	end
+	dropdown:Clear()
+	for _, name in ipairs(playerNames) do
+		dropdown:Add(name)
 	end
 end
 
-while true do
-	displayStats()
-	wait(1)
-end
+task.spawn(function()
+	while true do
+		if selectedPlayer then
+			updateStats(selectedPlayer)
+		end
+		task.wait(1)
+	end
+end)
+
+Players.PlayerAdded:Connect(updateDropdown)
+Players.PlayerRemoving:Connect(updateDropdown)
+updateDropdown()
