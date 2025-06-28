@@ -1,0 +1,190 @@
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/memejames/elerium-v2-ui-library//main/Library", true))()
+
+local window = library:AddWindow("Sad Private", {
+    main_color = Color3.fromRGB(8, 7, 128),
+    min_size = Vector2.new(740, 500),
+    can_resize = false,
+})
+
+local statsFolder = window:AddTab("Stats")
+local targetPlayer = nil
+local dropdown
+
+local function formatNumber(value)
+	if value >= 1e12 then return string.format("%.2fT", value / 1e12)
+	elseif value >= 1e9 then return string.format("%.2fB", value / 1e9)
+	elseif value >= 1e6 then return string.format("%.2fM", value / 1e6)
+	elseif value >= 1e3 then return string.format("%.2fK", value / 1e3)
+	else return tostring(value)
+	end
+end
+
+local function formatStat(value)
+	return tostring(value) .. " (" .. formatNumber(value) .. ")"
+end
+
+local function createDropdown()
+	if dropdown then dropdown:Destroy() end
+	dropdown = statsFolder:AddDropdown("Select Player", function(name)
+		targetPlayer = Players:FindFirstChild(name)
+	end)
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer then dropdown:Add(plr.Name) end
+	end
+end
+
+createDropdown()
+Players.PlayerAdded:Connect(createDropdown)
+Players.PlayerRemoving:Connect(function(leaving)
+	if targetPlayer == leaving then targetPlayer = nil end
+	createDropdown()
+end)
+
+statsFolder:AddLabel("My Stats")
+local myStrengthLabel = statsFolder:AddLabel("Strength: 0")
+local myDurabilityLabel = statsFolder:AddLabel("Durability: 0")
+local myAgilityLabel = statsFolder:AddLabel("Agility: 0")
+local myRebirthsLabel = statsFolder:AddLabel("Rebirths: 0")
+local myKillsLabel = statsFolder:AddLabel("Kills: 0")
+local myBrawlsLabel = statsFolder:AddLabel("Brawls: 0")
+
+local gainStrength, gainDurability, gainAgility = 0, 0, 0
+local gainRebirths, gainKills, gainBrawls = 0, 0, 0
+
+local myGainStrength = statsFolder:AddLabel("+0")
+local myGainDurability = statsFolder:AddLabel("+0")
+local myGainAgility = statsFolder:AddLabel("+0")
+local myGainRebirths = statsFolder:AddLabel("+0")
+local myGainKills = statsFolder:AddLabel("+0")
+local myGainBrawls = statsFolder:AddLabel("+0")
+
+statsFolder:AddLabel("Target Stats")
+local strengthLabel = statsFolder:AddLabel("Strength: 0")
+local durabilityLabel = statsFolder:AddLabel("Durability: 0")
+local rebirthsLabel = statsFolder:AddLabel("Rebirths: 0")
+local killsLabel = statsFolder:AddLabel("Kills: 0")
+local brawlsLabel = statsFolder:AddLabel("Brawls: 0")
+local agilityLabel = statsFolder:AddLabel("Agility: 0")
+local evilKarmaLabel = statsFolder:AddLabel("Evil Karma: 0")
+local goodKarmaLabel = statsFolder:AddLabel("Good Karma: 0")
+local currentMapLabel = statsFolder:AddLabel("Current Map: Unknown")
+local muscleKingTimeLabel = statsFolder:AddLabel("Muscle King Time: 0")
+local ownedGamepassesLabel = statsFolder:AddLabel("Owned Gamepasses: None")
+
+local prevValues = {
+	Strength = 0, Durability = 0, Agility = 0,
+	Rebirths = 0, Kills = 0, Brawls = 0
+}
+
+task.spawn(function()
+	while task.wait(0.5) do
+		local ls = LocalPlayer:FindFirstChild("leaderstats")
+		if ls then
+			local curStrength = ls:FindFirstChild("Strength") and ls.Strength.Value or 0
+			local curDurability = LocalPlayer:FindFirstChild("Durability") and LocalPlayer.Durability.Value or 0
+			local curAgility = LocalPlayer:FindFirstChild("Agility") and LocalPlayer.Agility.Value or 0
+			local curRebirths = ls:FindFirstChild("Rebirths") and ls.Rebirths.Value or 0
+			local curKills = ls:FindFirstChild("Kills") and ls.Kills.Value or 0
+			local curBrawls = ls:FindFirstChild("Brawls") and ls.Brawls.Value or 0
+
+			myStrengthLabel.Text = "Strength: " .. formatStat(curStrength)
+			myDurabilityLabel.Text = "Durability: " .. formatStat(curDurability)
+			myAgilityLabel.Text = "Agility: " .. formatStat(curAgility)
+			myRebirthsLabel.Text = "Rebirths: " .. formatStat(curRebirths)
+			myKillsLabel.Text = "Kills: " .. formatStat(curKills)
+			myBrawlsLabel.Text = "Brawls: " .. formatStat(curBrawls)
+
+			myGainStrength.Text = "+" .. formatNumber(curStrength - prevValues.Strength)
+			myGainDurability.Text = "+" .. formatNumber(curDurability - prevValues.Durability)
+			myGainAgility.Text = "+" .. formatNumber(curAgility - prevValues.Agility)
+			myGainRebirths.Text = "+" .. formatNumber(curRebirths - prevValues.Rebirths)
+			myGainKills.Text = "+" .. formatNumber(curKills - prevValues.Kills)
+			myGainBrawls.Text = "+" .. formatNumber(curBrawls - prevValues.Brawls)
+
+			prevValues.Strength = curStrength
+			prevValues.Durability = curDurability
+			prevValues.Agility = curAgility
+			prevValues.Rebirths = curRebirths
+			prevValues.Kills = curKills
+			prevValues.Brawls = curBrawls
+		end
+
+		if targetPlayer and targetPlayer.Parent then
+			local tls = targetPlayer:FindFirstChild("leaderstats")
+			local strength = tls and tls:FindFirstChild("Strength") and tls.Strength.Value or 0
+			local durability = targetPlayer:FindFirstChild("Durability") and targetPlayer.Durability.Value or 0
+			local agility = targetPlayer:FindFirstChild("Agility") and targetPlayer.Agility.Value or 0
+			local rebirths = tls and tls:FindFirstChild("Rebirths") and tls.Rebirths.Value or 0
+			local kills = tls and tls:FindFirstChild("Kills") and tls.Kills.Value or 0
+			local brawls = tls and tls:FindFirstChild("Brawls") and tls.Brawls.Value or 0
+			local evil = targetPlayer:FindFirstChild("evilKarma") and targetPlayer.evilKarma.Value or 0
+			local good = targetPlayer:FindFirstChild("goodKarma") and targetPlayer.goodKarma.Value or 0
+			local map = targetPlayer:FindFirstChild("currentMap") and targetPlayer.currentMap.Value or "Unknown"
+			local king = targetPlayer:FindFirstChild("muscleKingTime") and targetPlayer.muscleKingTime.Value or 0
+			local passes = targetPlayer:FindFirstChild("ownedGamepasses")
+
+			strengthLabel.Text = "Strength: " .. formatStat(strength)
+			durabilityLabel.Text = "Durability: " .. formatStat(durability)
+			rebirthsLabel.Text = "Rebirths: " .. formatStat(rebirths)
+			killsLabel.Text = "Kills: " .. formatStat(kills)
+			brawlsLabel.Text = "Brawls: " .. formatStat(brawls)
+			agilityLabel.Text = "Agility: " .. formatStat(agility)
+			evilKarmaLabel.Text = "Evil Karma: " .. formatStat(evil)
+			goodKarmaLabel.Text = "Good Karma: " .. formatStat(good)
+			currentMapLabel.Text = "Current Map: " .. map
+			muscleKingTimeLabel.Text = "Muscle King Time: " .. formatStat(king)
+
+			if passes and passes:IsA("Folder") then
+				local names = {}
+				for _, child in ipairs(passes:GetChildren()) do
+					if child:IsA("IntValue") then table.insert(names, child.Name) end
+				end
+				ownedGamepassesLabel.Text = "Owned Gamepasses: " .. (next(names) and table.concat(names, " | ") or "None")
+			end
+		end
+	end
+end)
+
+statsFolder:AddButton("Copiar Meus Stats", function()
+	local ls = LocalPlayer:FindFirstChild("leaderstats")
+	if not ls then return end
+
+	local texto = "[ðŸ“Œ Meus Stats]\n"
+		.. "Strength: " .. formatStat(ls.Strength.Value) .. "\n"
+		.. "Durability: " .. formatStat(LocalPlayer.Durability.Value) .. "\n"
+		.. "Agility: " .. formatStat(LocalPlayer.Agility.Value) .. "\n"
+		.. "Rebirths: " .. formatStat(ls.Rebirths.Value) .. "\n"
+		.. "Kills: " .. formatStat(ls.Kills.Value) .. "\n"
+		.. "Brawls: " .. formatStat(ls.Brawls.Value)
+
+	if setclipboard then setclipboard(texto)
+	elseif toclipboard then toclipboard(texto) end
+
+	game:GetService("StarterGui"):SetCore("SendNotification", {
+		Title = "Stats Copiados!",
+		Text = "Seus stats foram copiados.",
+		Duration = 4
+	})
+end)
+
+statsFolder:AddButton("Copiar Stats do Alvo", function()
+	if not targetPlayer or not targetPlayer:FindFirstChild("leaderstats") then return end
+	local ls = targetPlayer.leaderstats
+
+	local texto = "[ðŸ“Œ Stats do Alvo: " .. targetPlayer.Name .. "]\n"
+		.. "Strength: " .. formatStat(ls.Strength.Value) .. "\n"
+		.. "Durability: " .. formatStat(targetPlayer.Durability.Value) .. "\n"
+		.. "Agility: " .. formatStat(targetPlayer.Agility.Value) .. "\n"
+		.. "Rebirths: " .. formatStat(ls.Rebirths.Value) .. "\n"
+		.. "Kills: " .. formatStat(ls.Kills.Value) .. "\n"
+		.. "Brawls: " .. formatStat(ls.Brawls.Value)
+
+	if setclipboard then setclipboard(texto)
+	elseif toclipboard then toclipboard(texto) end
+
+	game:GetService("StarterGui"):SetCore("SendNotification", {
+		Title = "Stats Copiados!",
+		Text = "Do alvo foram copiados.",
+		Duration = 4
+	})
+end)
