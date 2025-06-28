@@ -43,23 +43,12 @@ Players.PlayerRemoving:Connect(function(leaving)
 	createDropdown()
 end)
 
-statsFolder:AddLabel("My Stats")
 local myStrengthLabel = statsFolder:AddLabel("Strength: 0")
 local myDurabilityLabel = statsFolder:AddLabel("Durability: 0")
 local myAgilityLabel = statsFolder:AddLabel("Agility: 0")
 local myRebirthsLabel = statsFolder:AddLabel("Rebirths: 0")
 local myKillsLabel = statsFolder:AddLabel("Kills: 0")
 local myBrawlsLabel = statsFolder:AddLabel("Brawls: 0")
-
-local gainStrength, gainDurability, gainAgility = 0, 0, 0
-local gainRebirths, gainKills, gainBrawls = 0, 0, 0
-
-local myGainStrength = statsFolder:AddLabel("+0")
-local myGainDurability = statsFolder:AddLabel("+0")
-local myGainAgility = statsFolder:AddLabel("+0")
-local myGainRebirths = statsFolder:AddLabel("+0")
-local myGainKills = statsFolder:AddLabel("+0")
-local myGainBrawls = statsFolder:AddLabel("+0")
 
 statsFolder:AddLabel("Target Stats")
 local strengthLabel = statsFolder:AddLabel("Strength: 0")
