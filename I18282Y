@@ -6,6 +6,9 @@ local window = library:AddWindow("Sad Private", {
     can_resize = false,
 })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
 local statsFolder = window:AddTab("Stats")
 local targetPlayer = nil
 local dropdown
